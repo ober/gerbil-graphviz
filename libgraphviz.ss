@@ -110,15 +110,15 @@ static Agnode_t* ffi_aghead(Agedge_t *e)
   return aghead(e);
 }
 
-/* --- gvRenderData shim (char** and size_t* out-params) --- */
+/* --- gvRenderData shim (char** out-param, length unused) --- */
+/* graphviz < 13 uses unsigned int*, >= 13 uses size_t*; cast via void* for portability */
 static char *_ffi_render_buf = NULL;
-static size_t _ffi_render_len = 0;
 
 static int ffi_gvRenderData(GVC_t *gvc, Agraph_t *g, const char *format)
 {
+  size_t len = 0;
   if (_ffi_render_buf) { gvFreeRenderData(_ffi_render_buf); _ffi_render_buf = NULL; }
-  _ffi_render_len = 0;
-  return gvRenderData(gvc, g, format, &_ffi_render_buf, &_ffi_render_len);
+  return gvRenderData(gvc, g, format, &_ffi_render_buf, (void *)&len);
 }
 
 static char _ffi_empty[] = "";
@@ -131,7 +131,6 @@ static char* ffi_gvRenderData_result(void)
 static void ffi_gvRenderData_free(void)
 {
   if (_ffi_render_buf) { gvFreeRenderData(_ffi_render_buf); _ffi_render_buf = NULL; }
-  _ffi_render_len = 0;
 }
 
 /* --- Agsym_t field accessors --- */
