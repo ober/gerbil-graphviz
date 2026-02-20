@@ -78,9 +78,9 @@ static GVC_t* ffi_gvContext(void)
     if (&gvplugin_dot_layout_LTX_library != NULL) {
         /* Plugins statically linked — register via built-in table */
         lt_symlist_t builtins[] = {
-            {"gvplugin_dot_layout", (void *)&gvplugin_dot_layout_LTX_library},
-            {"gvplugin_neato_layout", (void *)&gvplugin_neato_layout_LTX_library},
-            {"gvplugin_core", (void *)&gvplugin_core_LTX_library},
+            {"gvplugin_dot_layout_LTX_library", (void *)&gvplugin_dot_layout_LTX_library},
+            {"gvplugin_neato_layout_LTX_library", (void *)&gvplugin_neato_layout_LTX_library},
+            {"gvplugin_core_LTX_library", (void *)&gvplugin_core_LTX_library},
             {0, 0}
         };
         return gvContextPlugins(builtins, 0);
