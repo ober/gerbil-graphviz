@@ -64,6 +64,31 @@
   (c-declare #<<END-C
 #include <graphviz/cgraph.h>
 #include <graphviz/gvc.h>
+#include <graphviz/gvplugin.h>
+#include <graphviz/gvcext.h>
+
+/* --- Built-in plugin table for static builds --- */
+/* Weak symbols: resolve to the plugin when statically linked, NULL otherwise */
+extern gvplugin_library_t gvplugin_dot_layout_LTX_library __attribute__((weak));
+extern gvplugin_library_t gvplugin_neato_layout_LTX_library __attribute__((weak));
+extern gvplugin_library_t gvplugin_core_LTX_library __attribute__((weak));
+
+static GVC_t* ffi_gvContext(void)
+{
+    if (&gvplugin_dot_layout_LTX_library != NULL) {
+        /* Plugins statically linked — register via built-in table */
+        lt_symlist_t builtins[] = {
+            {"gvplugin_dot_layout", (void *)&gvplugin_dot_layout_LTX_library},
+            {"gvplugin_neato_layout", (void *)&gvplugin_neato_layout_LTX_library},
+            {"gvplugin_core", (void *)&gvplugin_core_LTX_library},
+            {0, 0}
+        };
+        return gvContextPlugins(builtins, 0);
+    } else {
+        /* Dynamic build — let graphviz discover plugins via filesystem */
+        return gvContext();
+    }
+}
 
 /* --- Finalizers --- */
 static ___SCMOBJ ffi_agclose(void *ptr)
@@ -383,7 +408,7 @@ END-C
 
   ;; --- GVC layout and rendering ---
   (define-c-lambda gvContext () GVC_t*
-    "gvContext")
+    "ffi_gvContext")
   (define-c-lambda gvFreeContext (GVC_t*) int
     "___return(gvFreeContext(___arg1));")
   (define-c-lambda gvLayout (GVC_t* Agraph_t*/borrowed char-string) int
